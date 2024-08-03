@@ -1,12 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Image cropping</title>
-</head>
-<body>
-    <h1>Hello</h1>
-    <h2>Hruday</h2>
-</body>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"
+      integrity="sha512-JyCZjCOZoyeQZSd5+YEAcFgz2fowJ1F1hyJOXgtKu4llIa0KneLcidn5bwfutiehUTiOuK87A986BZJMko0eWQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+      integrity="sha512-UtLOu9C7NuThQhuXXrGwx9Jb/z9zPQJctuAgNUBK3Z6kkSYT9wJ+2+dh6klS+TDBCV9kNPBbAxbVD+vCcfGPaA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+
+    <style>
+      img {
+        display: block;
+        max-width: 100%;
+      }
+      .back-and-dimention {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .uploadOuter {
+        text-align: center;
+        margin: 15px 0 25px 0;
+      }
+
+      .dragBox {
+        width: 100%;
+        height: 500px;
+        margin: 0 auto;
+        position: relative;
+        text-align: center;
+        font-weight: bold;
+        line-height: 95px;
+        color: #141414;
+        border: 2px dashed #ccc;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        transition: transform 0.3s;
+      }
+      .dragBox input[type="file"] {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        opacity: 0;
+        top: 0;
+        left: 0;
+      }
+      .draging {
+        transform: scale(1.1);
+      }
+      #preview {
+        text-align: center;
+      }
+      #preview img {
+        max-width: 100%;
+      }
+      .action-dimention-container {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-xl">
+      <h1 class="text-center">Crop Image</h1>
+
+      <div class="uploadOuter">
+        <span class="dragBox">
+          Darg and Drop image here
+          <input
+            type="file"
+            onChange="dragNdrop(event)"
+            ondragover="drag()"
+            ondrop="drop()"
+            id="uploadFile"
+          />
+        </span>
+      </div>
+
+      <div class="action-dimention-container">
+        <div class="back-and-dimention">
+          <strong>Preview</strong>
+
+          <p>
+            <span class="width-dimension-text">0</span> x
+            <span class="height-dimension-text">0</span>
+          </p>
+        </div>
+        <div id="preview">
+          <!-- <img id="image" src="img.jpg" /> -->
+        </div>
+
+        <div class="d-flex justify-content-end mt-2">
+          <button class="btn btn-primary" onclick="downloadBtnOnClick()">
+            Download
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let cropper;
+      //   const image = document.querySelector("#image");
+      let croppedCanvasHeight, croppedCanvasWidth;
+
+      function dragNdrop(event) {
+        var fileName = URL.createObjectURL(event.target.files[0]);
+        var preview = document.getElementById("preview");
+        var previewImg = document.createElement("img");
+        previewImg.setAttribute("src", fileName);
+        preview.innerHTML = "";
+        document.querySelector(".dragBox").style.height = "100px";
+        preview.appendChild(previewImg);
+        previewImg.style.display = "block";
+        previewImg.style.maxWidth = "100%";
+
+        document.querySelector(".action-dimention-container").style.display =
+          "block";
+
+        cropper = new Cropper(previewImg, {
+          //   aspectRatio: 16 / 9,
+          crop(event) {
+            croppedCanvasWidth = Number(event.detail.width).toFixed(2);
+            croppedCanvasHeight = Number(event.detail.height).toFixed(2);
+            document.querySelector(".width-dimension-text").innerHTML =
+              croppedCanvasWidth;
+            document.querySelector(".height-dimension-text").innerHTML =
+              croppedCanvasHeight;
+            // console.log(event.detail.width);
+            // console.log(event.detail.height);
+          },
+        });
+      }
+
+      function drag() {
+        document.getElementById("uploadFile").parentNode.className =
+          "draging dragBox";
+      }
+      function drop() {
+        document.getElementById("uploadFile").parentNode.className = "dragBox";
+      }
+
+      const downloadBtnOnClick = () => {
+        cropper
+          .getCroppedCanvas({
+            width: croppedCanvasWidth,
+            height: croppedCanvasHeight,
+            fillColor: "#fff",
+            imageSmoothingEnabled: false,
+            imageSmoothingQuality: "high",
+          })
+          .toBlob((blob) => {
+            const link = document.createElement("a");
+            link.download = `${Date.now()}.png`;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+          });
+      };
+    </script>
+  </body>
 </html>
